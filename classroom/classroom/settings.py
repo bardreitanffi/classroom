@@ -25,6 +25,8 @@ SECRET_KEY = '+08q72(05of*c-@i8+ajoqnw3^%212^rx8!km7z$ez(6t#+x+p'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+
+
 ALLOWED_HOSTS = []
 
 
@@ -37,6 +39,17 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+)
+
+#External apps
+INSTALLED_APPS += (
+    'django_extensions',
+)
+
+#internal apps
+INSTALLED_APPS += (
+    'lti',
+    'discussion',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -105,3 +118,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
+try:
+    from local_settings import *
+except ImportError as e:
+    logging.exception(e)
+    print "There was an error importing local_settings. Check that you have linked the file correctly"
+    print "Also, there may be some errors in local_settings.py"
+
