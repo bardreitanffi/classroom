@@ -3,6 +3,9 @@ from django.views.generic import View
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from lti.ims.tool_provider import DjangoToolProvider
+from lti.models import get_or_create_lti_user
+from django.contrib.auth import login
+
 
 from django.conf import settings 
 
@@ -21,6 +24,8 @@ class LTILaunch(View):
                 print "{0} : {1}".format(k,v)
 
         self.setup_tool_provider(request)
+        user = get_or_create_lti_user(self.tool_provider)
+        login(request, user)
         
 
         return JsonResponse({'success' : 'OK'})

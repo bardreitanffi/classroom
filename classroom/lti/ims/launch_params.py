@@ -154,3 +154,11 @@ class LaunchParamsMixin(object):
         params.update(custom_params)
         params.update(ext_params)
         return params
+
+    def get_param(self, key):
+        try:
+            return getattr(self, key)
+        except AttributeError:
+            print "Attribute: %s not found in LTI tool_provider" % key
+            return None
+
