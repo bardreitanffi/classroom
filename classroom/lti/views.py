@@ -12,7 +12,7 @@ from django.conf import settings
 
 class LTILaunch(View):
 
-    http_method_names = ['post', 'get']
+    http_method_names = ['post']
 
     @csrf_exempt
     def dispatch(self, *args, **kwargs):
@@ -26,12 +26,8 @@ class LTILaunch(View):
         self.setup_tool_provider(request)
         user = get_or_create_lti_user(self.tool_provider)
         login(request, user)
-        
-
+        return self.launch()
         return JsonResponse({'success' : 'OK'})
-
-    def get(self, request, *args, **kwargs):
-        return JsonResponse({'success' : 'BAD'})
 
     def setup_tool_provider(self, request):
         if 'oauth_consumer_key' not in request.POST:
@@ -42,6 +38,15 @@ class LTILaunch(View):
         self.tool_provider = DjangoToolProvider(consumer_key, secret, request.POST)
         self.tool_provider.valid_request(request)
 
+    def launch(self):
+        if self.tool_provider.is_instructor():
+            return self.launch_instructor()
+        elif self.tool_provider.is_student():
+            return self.launch_student()
 
+    def launch_student(self):
+        raise NotImplementedError
 
+    def launch_instructor(self):
+        raise NotImplementedError
 
