@@ -27,7 +27,7 @@ def lti_auth(view):
         tp.valid_request(request)
         user = get_or_create_lti_user(tp)
         login(request, user)
-        return view(*args, **kwargs)
+        return view(request, tp=tp)
 
     return _decorated_view
 
@@ -66,14 +66,17 @@ class LTILaunch(View):
 
     def launch_student(self):
         return JsonResponse({'success' : 'Student'})
-        raise NotImplementedError
 
     def launch_instructor(self):
         return JsonResponse({'success' : 'Teacher'})
-        raise NotImplementedError
 
 @lti_auth
-def lti_view(request):
-        return JsonResponse({'success' : 'OK'})
+def lti_view(request, tp=None):
+    if tp is None:
+        raise PermissionDenied()
+        #tp has to come via decorator
+    if tp.is_instructor():
+        return JsonResponse({'success' : 'Student'})
+    elif tp.is_student():
+        return JsonResponse({'success' : 'Teacher'})
 
-    
