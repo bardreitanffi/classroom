@@ -5,10 +5,31 @@ from django.views.decorators.csrf import csrf_exempt
 from lti.ims.tool_provider import DjangoToolProvider
 from lti.models import get_or_create_lti_user
 from django.contrib.auth import login
+from django.core.exceptions import PermissionDenied
 
 
 from django.conf import settings 
 
+
+def lti_auth(view):
+
+    def _decorated_view(request, *args, **kwargs):
+        if settings.LTI_DEBUG:
+            for k,v in request.POST.items():
+                print "{0} : {1}".format(k,v)
+
+        if 'oauth_consumer_key' not in request.POST:
+            raise PermissionDenied()  
+
+        consumer_key = settings.LTI_KEY
+        secret = settings.LTI_SECRET
+        tp = DjangoToolProvider(consumer_key, secret, request.POST)
+        tp.valid_request(request)
+        user = get_or_create_lti_user(tp)
+        login(request, user)
+        return view(*args, **kwargs)
+
+    return _decorated_view
 
 class LTILaunch(View):
 
@@ -27,7 +48,6 @@ class LTILaunch(View):
         user = get_or_create_lti_user(self.tool_provider)
         login(request, user)
         return self.launch()
-        return JsonResponse({'success' : 'OK'})
 
     def setup_tool_provider(self, request):
         if 'oauth_consumer_key' not in request.POST:
@@ -45,8 +65,15 @@ class LTILaunch(View):
             return self.launch_student()
 
     def launch_student(self):
+        return JsonResponse({'success' : 'Student'})
         raise NotImplementedError
 
     def launch_instructor(self):
+        return JsonResponse({'success' : 'Teacher'})
         raise NotImplementedError
 
+@lti_auth
+def lti_view(request):
+        return JsonResponse({'success' : 'OK'})
+
+    
