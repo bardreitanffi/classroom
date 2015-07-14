@@ -27,8 +27,6 @@ def get_or_create_lti_user(tool_provider):
     if email is None:
         email = "{0}@canvas.lms".format(userid)
 
-    import pdb
-    pdb.set_trace()
     lti_username = hashlib.sha256(userid).hexdigest()[0:30]  #will not work for multiple LMSes
     try:
         user = User.objects.get(username=lti_username)
